@@ -29,6 +29,13 @@ namespace NotasOracleWinForms
 
         private void btnGuardar_Click(object sender, EventArgs e)
         {
+            if (LimiteAlumnos())
+            {
+                MessageBox.Show(
+                    "Ya se registraron los 87 alumnos! ");
+                return;
+            }   
+
             try
             {
                 using (OracleConnection cn =
@@ -140,6 +147,26 @@ namespace NotasOracleWinForms
             txtPromedio.Clear();
 
             txtNombre.Focus();
+        }
+
+        private bool LimiteAlumnos()
+        {
+            using (OracleConnection cn =
+                   conexion.ObtenerConexion())
+            {
+                cn.Open();
+
+                string sql =
+                    "SELECT COUNT(*) FROM ALUMNOS_NOTAS_J";
+
+                OracleCommand cmd =
+                    new OracleCommand(sql, cn);
+
+                int cantidad =
+                    Convert.ToInt32(cmd.ExecuteScalar());
+
+                return cantidad >= 87;
+            }
         }
     }
 }
