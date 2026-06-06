@@ -7,13 +7,11 @@ namespace NotasOracleWinForms
         {
             InitializeComponent();
         }
-
-
-
+        /*
         private void Form1_Load(object sender, EventArgs e)
         {
 
-        }
+        }*/
 
         private void btnCalcular_Click(object sender, EventArgs e)
         {
@@ -30,10 +28,10 @@ namespace NotasOracleWinForms
             txtSuma.Text = suma.ToString();
             txtPromedio.Text = promedio.ToString("0.00");
         }
-
+        /*
         private void Form1_Load_1(object sender, EventArgs e)
         {
 
-        }
+        }*/
     }
 }
