@@ -1,4 +1,5 @@
 using Oracle.ManagedDataAccess.Client;
+using System.Data;
 
 namespace NotasOracleWinForms
 {
@@ -58,7 +59,7 @@ namespace NotasOracleWinForms
                             :promedio
                     )";
 
-                    OracleCommand cmd = 
+                    OracleCommand cmd =
                         new OracleCommand(sql, cn);
 
                     cmd.Parameters.Add(":nombre",
@@ -89,6 +90,34 @@ namespace NotasOracleWinForms
 
                     MessageBox.Show(
                         "Alumno guardado correctamente! ");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void btnConsultar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (OracleConnection cn =
+                       conexion.ObtenerConexion())
+                {
+                    cn.Open();
+
+                    string sql =
+                        "SELECT * FROM ALUMNOS_NOTAS_J";
+
+                    OracleDataAdapter da =
+                        new OracleDataAdapter(sql, cn);
+
+                    DataTable dt = new DataTable();
+
+                    da.Fill(dt);
+
+                    dgvDatos.DataSource = dt;
                 }
             }
             catch (Exception ex)
