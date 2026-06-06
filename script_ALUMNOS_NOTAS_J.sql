@@ -75,4 +75,6 @@ SET
 
 COMMIT;
 
+-- verificar la carga .
+SELECT COUNT(*) TOTAL_ALUMNOS FROM ALUMNOS_NOTAS_J;
 
