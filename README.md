@@ -3,6 +3,8 @@
 
 <img width="1024" height="1024" alt="image" src="https://github.com/user-attachments/assets/72b4782e-387f-4503-8354-a7ecddbe1b8f" />  
 
+<img width="2552" height="1079" alt="image" src="https://github.com/user-attachments/assets/2bbb6fc2-fd5b-41fa-9320-0a33a0f694c4" />  
+
 ```
 Aplicacion de escritorio desarrollada en **Visual Studio 2022 (C# Windows Forms)** que permite:
 
