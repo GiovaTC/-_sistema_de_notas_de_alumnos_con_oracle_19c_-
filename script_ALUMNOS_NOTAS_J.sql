@@ -13,3 +13,66 @@ CREATE TABLE ALUMNOS_NOTAS_J (
 );
 
 COMMIT;
+
+-- probar el límite de 87 alumnos .
+BEGIN
+    FOR i IN 1..85 LOOP
+
+        INSERT INTO ALUMNOS_NOTAS_J
+        (
+            NOMBRE,
+            NOTA1,
+            NOTA2,
+            NOTA3,
+            NOTA4,
+            NOTA5,
+            SUMA,
+            PROMEDIO
+        )
+        VALUES
+        (
+            'ALUMNO ' || LPAD(i, 3, '0'),
+
+            ROUND(DBMS_RANDOM.VALUE(1, 5), 2),
+            ROUND(DBMS_RANDOM.VALUE(1, 5), 2),
+            ROUND(DBMS_RANDOM.VALUE(1, 5), 2),
+            ROUND(DBMS_RANDOM.VALUE(1, 5), 2),
+            ROUND(DBMS_RANDOM.VALUE(1, 5), 2),
+
+            0,
+            0
+        );
+
+    END LOOP;
+
+    COMMIT;
+END;
+/
+
+COMMIT;
+
+-- script para calcular correctamente la SUMA y el PROMEDIO de los 85 registros .
+UPDATE ALUMNOS_NOTAS_J
+SET
+    SUMA =
+          NOTA1
+        + NOTA2
+        + NOTA3
+        + NOTA4
+        + NOTA5,
+
+    PROMEDIO =
+        ROUND(
+            (
+                NOTA1
+              + NOTA2
+              + NOTA3
+              + NOTA4
+              + NOTA5
+            ) / 5,
+            2
+        );
+
+COMMIT;
+
+
