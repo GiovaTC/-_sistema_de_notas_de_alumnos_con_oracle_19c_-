@@ -1,4 +1,5 @@
 ﻿using Oracle.ManagedDataAccess.Client;
+using System;
 
 namespace NotasOracleWinForms
 {
@@ -12,7 +13,22 @@ namespace NotasOracleWinForms
 
         public OracleConnection ObtenerConexion()
         {
-            return new OracleConnection(cadena);
+            OracleConnection conexion =
+                new OracleConnection(cadena);
+
+            try
+            {
+                conexion.Open();
+                conexion.Close();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(
+                    "Error al conectar con Oracle: " +
+                    ex.Message);
+            }
+
+            return conexion;
         }
     }
 }
