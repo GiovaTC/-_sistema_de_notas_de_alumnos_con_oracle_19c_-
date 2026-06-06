@@ -125,5 +125,21 @@ namespace NotasOracleWinForms
                 MessageBox.Show(ex.Message);
             }
         }
+
+        private void btnLimpiar_Click(object sender, EventArgs e)
+        {
+            txtNombre.Clear();
+
+            txtNota1.Clear();
+            txtNota2.Clear();
+            txtNota3.Clear();
+            txtNota4.Clear();
+            txtNota5.Clear();
+
+            txtSuma.Clear();
+            txtPromedio.Clear();
+
+            txtNombre.Focus();
+        }
     }
 }
