@@ -1,8 +1,9 @@
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-
+    
 namespace NotasOracleWinForms
 {
     public partial class Form1 : Form
@@ -15,20 +16,33 @@ namespace NotasOracleWinForms
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private async void Form1_Load(object sender, EventArgs e)
+        {
+            await VerificarConexionAsync();
+        }
+
+        private async Task VerificarConexionAsync()
         {
             try
             {
-                using (OracleConnection cn =
-                       conexion.ObtenerConexion())
-                {
-                    cn.Open();
+                bool conectado = await Task.Run(() =>
+                    conexion.ProbarConexion());
 
+                if (conectado)
+                {
                     MessageBox.Show(
                         "Conexión Oracle establecida correctamente.",
                         "Oracle",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "No fue posible conectar con Oracle.",
+                        "Oracle",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
@@ -60,15 +74,26 @@ namespace NotasOracleWinForms
             catch
             {
                 MessageBox.Show(
-                    "Ingrese notas válidas.",
+                    "Ingrese valores numéricos válidos en las notas.",
                     "Validación",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
         }
 
-        private void btnGuardar_Click(object sender, EventArgs e)
+        private async void btnGuardar_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txtNombre.Text))
+            {
+                MessageBox.Show(
+                    "Debe ingresar el nombre del alumno.",
+                    "Validación",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
+            }
+
             if (LimiteAlumnos())
             {
                 MessageBox.Show(
@@ -82,13 +107,12 @@ namespace NotasOracleWinForms
 
             try
             {
-                using (OracleConnection cn =
-                       conexion.ObtenerConexion())
+                await Task.Run(() =>
                 {
-                    if (cn.State != ConnectionState.Open)
-                    {
-                        cn.Open();
-                    }
+                    using OracleConnection cn =
+                        conexion.ObtenerConexion();
+
+                    cn.Open();
 
                     string sql = @"
                     INSERT INTO ALUMNOS_NOTAS_J
@@ -114,66 +138,74 @@ namespace NotasOracleWinForms
                         :promedio
                     )";
 
-                    using (OracleCommand cmd =
-                           new OracleCommand(sql, cn))
-                    {
-                        cmd.Parameters.Add(":nombre",
-                            txtNombre.Text.Trim());
+                    using OracleCommand cmd =
+                        new OracleCommand(sql, cn);
 
-                        cmd.Parameters.Add(":n1",
-                            decimal.Parse(txtNota1.Text));
+                    cmd.Parameters.Add(":nombre",
+                        txtNombre.Text.Trim());
 
-                        cmd.Parameters.Add(":n2",
-                            decimal.Parse(txtNota2.Text));
+                    cmd.Parameters.Add(":n1",
+                        decimal.Parse(txtNota1.Text));
 
-                        cmd.Parameters.Add(":n3",
-                            decimal.Parse(txtNota3.Text));
+                    cmd.Parameters.Add(":n2",
+                        decimal.Parse(txtNota2.Text));
 
-                        cmd.Parameters.Add(":n4",
-                            decimal.Parse(txtNota4.Text));
+                    cmd.Parameters.Add(":n3",
+                        decimal.Parse(txtNota3.Text));
 
-                        cmd.Parameters.Add(":n5",
-                            decimal.Parse(txtNota5.Text));
+                    cmd.Parameters.Add(":n4",
+                        decimal.Parse(txtNota4.Text));
 
-                        cmd.Parameters.Add(":suma",
-                            decimal.Parse(txtSuma.Text));
+                    cmd.Parameters.Add(":n5",
+                        decimal.Parse(txtNota5.Text));
 
-                        cmd.Parameters.Add(":promedio",
-                            decimal.Parse(txtPromedio.Text));
+                    cmd.Parameters.Add(":suma",
+                        decimal.Parse(txtSuma.Text));
 
-                        cmd.ExecuteNonQuery();
-                    }
+                    cmd.Parameters.Add(":promedio",
+                        decimal.Parse(txtPromedio.Text));
 
-                    MessageBox.Show(
-                        "Alumno guardado correctamente.",
-                        "Éxito",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
+                    cmd.ExecuteNonQuery();
+                });
 
-                    btnLimpiar_Click(null, null);
-                }
+                MessageBox.Show(
+                    "Alumno guardado correctamente.",
+                    "Éxito",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                btnLimpiar_Click(null, null);
+            }
+            catch (OracleException ex)
+            {
+                MessageBox.Show(
+                    $"Oracle Error\n\n" +
+                    $"Código: {ex.Number}\n" +
+                    $"Mensaje: {ex.Message}",
+                    "Oracle",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
                     ex.ToString(),
-                    "Error Oracle",
+                    "Error General",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
         }
 
-        private void btnConsultar_Click(object sender, EventArgs e)
+        private async void btnConsultar_Click(object sender, EventArgs e)
         {
             try
             {
-                using (OracleConnection cn =
-                       conexion.ObtenerConexion())
+                DataTable dt = await Task.Run(() =>
                 {
-                    if (cn.State != ConnectionState.Open)
-                    {
-                        cn.Open();
-                    }
+                    using OracleConnection cn =
+                        conexion.ObtenerConexion();
+
+                    cn.Open();
 
                     string sql =
                         "SELECT * FROM ALUMNOS_NOTAS_J ORDER BY ID";
@@ -181,18 +213,30 @@ namespace NotasOracleWinForms
                     OracleDataAdapter da =
                         new OracleDataAdapter(sql, cn);
 
-                    DataTable dt = new DataTable();
+                    DataTable tabla = new DataTable();
 
-                    da.Fill(dt);
+                    da.Fill(tabla);
 
-                    dgvDatos.DataSource = dt;
-                }
+                    return tabla;
+                });
+
+                dgvDatos.DataSource = dt;
+            }
+            catch (OracleException ex)
+            {
+                MessageBox.Show(
+                    $"Oracle Error\n\n" +
+                    $"Código: {ex.Number}\n" +
+                    $"Mensaje: {ex.Message}",
+                    "Oracle",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
                     ex.ToString(),
-                    "Error Oracle",
+                    "Error General",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
@@ -218,33 +262,40 @@ namespace NotasOracleWinForms
         {
             try
             {
-                using (OracleConnection cn =
-                       conexion.ObtenerConexion())
-                {
-                    if (cn.State != ConnectionState.Open)
-                    {
-                        cn.Open();
-                    }
+                using OracleConnection cn =
+                    conexion.ObtenerConexion();
 
-                    string sql =
-                        "SELECT COUNT(*) FROM ALUMNOS_NOTAS_J";
+                cn.Open();
 
-                    using (OracleCommand cmd =
-                           new OracleCommand(sql, cn))
-                    {
-                        int cantidad =
-                            Convert.ToInt32(
-                                cmd.ExecuteScalar());
+                string sql =
+                    "SELECT COUNT(*) FROM ALUMNOS_NOTAS_J";
 
-                        return cantidad >= 87;
-                    }
-                }
+                using OracleCommand cmd =
+                    new OracleCommand(sql, cn);
+
+                int cantidad =
+                    Convert.ToInt32(
+                        cmd.ExecuteScalar());
+
+                return cantidad >= 87;
+            }
+            catch (OracleException ex)
+            {
+                MessageBox.Show(
+                    $"Oracle Error\n\n" +
+                    $"Código: {ex.Number}\n" +
+                    $"Mensaje: {ex.Message}",
+                    "Oracle",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return false;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
                     ex.ToString(),
-                    "Error Oracle",
+                    "Error General",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
@@ -252,4 +303,4 @@ namespace NotasOracleWinForms
             }
         }
     }
-}   
+}
